@@ -232,11 +232,67 @@ button:active{
 }
 
 /* ====== Mobile tweaks ====== */
-@media (max-width: 520px){
+/* ====== Mobile & Small Screens ====== */
+@media (max-width: 720px){
   nav{
-    align-items: flex-start;
     flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
-  nav > div{ width:100%; }
-  nav a{ flex: 1; text-align:center; }
+
+  nav h1{
+    font-size: 18px;
+  }
+
+  nav > div{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  nav a{
+    text-align: center;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  main{
+    margin: 14px auto;
+    padding: 0 12px 22px;
+  }
+
+  .card{
+    padding: 14px;
+    margin: 12px 0;
+  }
+
+  input, textarea{
+    font-size: 16px; /* prevents iPhone zoom */
+  }
+
+  button{
+    width: 100%;
+    padding: 12px 14px;
+  }
+
+  .schedule{
+    grid-template-columns: 1fr; /* one day per row */
+    gap: 12px;
+    padding: 0;
+  }
+
+  .day{
+    padding: 14px;
+  }
+
+  .day li{
+    padding: 10px 10px;
+  }
+}
+
+@media (max-width: 380px){
+  nav > div{
+    grid-template-columns: 1fr; /* stack links */
+  }
 }
