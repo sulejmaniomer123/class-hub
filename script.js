@@ -52,3 +52,50 @@ function escapeHtml(str) {
 }
 
 loadPosts();
+async function loadAnnouncement() {
+  const titleEl = document.getElementById("annTitle");
+  const bodyEl = document.getElementById("annBody");
+  if (!titleEl || !bodyEl) return;
+
+  const { data, error } = await client
+    .from("announcements")
+    .select("*")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    bodyEl.textContent = "Could not load announcement.";
+    return;
+  }
+
+  titleEl.textContent = data.title;
+  bodyEl.textContent = data.body;
+}
+loadAnnouncement();
+
+async function adminAnnounce() {
+  const username = prompt("Admin username:");
+  if (username === null) return;
+
+  const password = prompt("Admin password:");
+  if (password === null) return;
+
+  const title = prompt("Announcement title:", "Announcement");
+  if (title === null) return;
+
+  const body = prompt("Announcement message:");
+  if (body === null) return;
+
+  const res = await fetch("/.netlify/functions/announce", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, title, body })
+  });
+
+  if (!res.ok) {
+    alert("Failed: " + (await res.text()));
+    return;
+  }
+
+  alert("Announcement posted!");
+}

@@ -5,7 +5,6 @@
     <title>Class Wall</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 </head>
 <body>
 
@@ -19,13 +18,22 @@
     </div>
 </nav>
 
+<!-- 🔥 Announcement Section -->
+<section class="card">
+    <h2 id="annTitle">Announcement</h2>
+    <p id="annBody">Loading...</p>
+</section>
+
+<!-- 📝 Create Post -->
 <section class="card">
     <h2>Create Post</h2>
     <input type="text" id="name" placeholder="Your name">
     <textarea id="content" placeholder="Write something..."></textarea>
     <button onclick="addPost()">Post</button>
+    <button onclick="adminAnnounce()">Announce (Admin)</button>
 </section>
 
+<!-- 📌 Posts -->
 <section class="card">
     <h2>Posts</h2>
     <div id="posts"></div>
