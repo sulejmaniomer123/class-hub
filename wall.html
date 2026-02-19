@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Wall</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+<body>
+
+<nav>
+    <h1>Class Wall</h1>
+    <div>
+        <a href="index.html">Home</a>
+        <a href="wall.html">Wall</a>
+        <a href="resources.html">Resources</a>
+        <a href="schedule.html">Schedule</a>
+    </div>
+</nav>
+
+<section class="card">
+    <h2>Create Post</h2>
+    <input type="text" id="name" placeholder="Your name">
+    <textarea id="content" placeholder="Write something..."></textarea>
+    <button onclick="addPost()">Post</button>
+</section>
+
+<section class="card">
+    <h2>Posts</h2>
+    <div id="posts"></div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

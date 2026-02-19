@@ -1,0 +1,242 @@
+/* ====== Base ====== */
+:root{
+  --bg: #0b1020;
+  --panel: rgba(255,255,255,0.06);
+  --panel2: rgba(255,255,255,0.10);
+  --text: #e9eefc;
+  --muted: rgba(233,238,252,0.72);
+  --line: rgba(255,255,255,0.12);
+  --brand: #4f8cff;
+  --brand2:#7c4dff;
+  --danger:#ff4d6d;
+
+  --radius: 14px;
+  --shadow: 0 14px 40px rgba(0,0,0,0.35);
+  --shadow2: 0 10px 26px rgba(0,0,0,0.28);
+}
+
+*{ box-sizing: border-box; }
+
+html,body{
+  height:100%;
+}
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color: var(--text);
+  background: radial-gradient(1200px 700px at 10% 10%, rgba(79,140,255,0.28), transparent 55%),
+              radial-gradient(1200px 700px at 90% 90%, rgba(124,77,255,0.22), transparent 55%),
+              var(--bg);
+}
+
+/* ====== Layout helpers ====== */
+main{
+  max-width: 1000px;
+  margin: 22px auto;
+  padding: 0 16px 32px;
+}
+
+a{
+  color: var(--text);
+  text-decoration: none;
+}
+a:hover{ text-decoration: underline; }
+
+/* ====== Navbar ====== */
+nav{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(11,16,32,0.78);
+  backdrop-filter: blur(10px);
+}
+
+nav h1{
+  margin:0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+nav > div{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+nav a{
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+nav a:hover{
+  background: rgba(255,255,255,0.10);
+}
+
+/* ====== Cards ====== */
+.card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow2);
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.card h2{
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.card p{
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* ====== Inputs ====== */
+input, textarea{
+  width: 100%;
+  padding: 12px 12px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.22);
+  color: var(--text);
+  outline: none;
+}
+
+textarea{ min-height: 110px; resize: vertical; }
+
+input::placeholder, textarea::placeholder{
+  color: rgba(233,238,252,0.55);
+}
+
+input:focus, textarea:focus{
+  border-color: rgba(79,140,255,0.55);
+  box-shadow: 0 0 0 4px rgba(79,140,255,0.16);
+}
+
+/* ====== Buttons ====== */
+button{
+  margin-top: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: linear-gradient(135deg, var(--brand), var(--brand2));
+  color: white;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: var(--shadow2);
+}
+button:hover{
+  filter: brightness(1.05);
+}
+button:active{
+  transform: translateY(1px);
+}
+
+/* ====== Posts styling (wall + latest) ====== */
+#posts .card, #latestPosts .card{
+  margin: 12px 0;
+}
+
+.post{
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.06);
+}
+
+.post strong{
+  display:block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.post p{
+  margin:0;
+  color: var(--muted);
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+/* ====== Schedule grid ====== */
+.schedule{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.day{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow2);
+}
+
+.day h2{
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 900;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+}
+
+.day h2::after{
+  content:"";
+  width: 46px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--brand2));
+  opacity: 0.9;
+}
+
+.day ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.day li{
+  padding: 8px 10px;
+  margin: 8px 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.20);
+  color: rgba(233,238,252,0.86);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ====== Small footer text ====== */
+.small{
+  color: rgba(233,238,252,0.55);
+  font-size: 12px;
+}
+
+/* ====== Mobile tweaks ====== */
+@media (max-width: 520px){
+  nav{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  nav > div{ width:100%; }
+  nav a{ flex: 1; text-align:center; }
+}
