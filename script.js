@@ -57,13 +57,17 @@ function showSignup() {
 
 async function signup(username, password) {
   const email = usernameToEmail(username);
-  const { error } = await client.auth.signUp({
+
+  const { data, error } = await client.auth.signUp({
     email,
     password,
     options: { data: { username, display_name: username } }
   });
 
-  if (error) return alert(error.message);
+  console.log("SIGNUP data:", data);
+  console.log("SIGNUP error:", error);
+
+  if (error) return alert("Signup error: " + error.message);
   alert("Account created! Now log in.");
 }
 
