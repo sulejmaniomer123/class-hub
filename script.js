@@ -151,99 +151,34 @@ async function adminAnnounce() {
 }
 
 // ====== Init ======
-document.addEventListener("DOMContentLoaded", init);
+async function init() {
   const { data: sess } = await client.auth.getSession();
   let session = sess.session;
-  let profile = await getMyProfile(session);
+
+  // ✅ Only fetch profile if logged in
+  let profile = null;
+  if (session) {
+    profile = await getMyProfile(session);
+  }
 
   renderAuthArea(session, profile);
   enforcePostingRules(session, profile);
 
-  // Posts page only
-  loadPosts();
+  // Only load posts if #posts exists on this page
+  if (document.getElementById("posts")) {
+    loadPosts();
+  }
 
   // Update UI on login/logout
-  client.auth.onAuthStateChange(async (_event, newSession) => {
-    session = newSession;
-    profile = await getMyProfile(session);
+  client.auth.onAuthStateChange(async (_event, newSessionObj) => {
+    session = newSessionObj;
+    profile = session ? await getMyProfile(session) : null;
+
     renderAuthArea(session, profile);
     enforcePostingRules(session, profile);
-    loadPosts();
+
+    if (document.getElementById("posts")) {
+      loadPosts();
+    }
   });
 }
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-  }[m]));
-}
-
-init();
-async function loadAccountPage() {
-  const avatarImg = document.getElementById("avatarPreview");
-  const displayInput = document.getElementById("displayName");
-  if (!avatarImg || !displayInput) return;
-
-  const { data: sess } = await client.auth.getSession();
-  const session = sess.session;
-  if (!session) {
-    alert("You must log in.");
-    window.location.href = "wall.html";
-    return;
-  }
-
-  const { data } = await client
-    .from("profiles")
-    .select("*")
-    .eq("id", session.user.id)
-    .single();
-
-  if (data) {
-    displayInput.value = data.display_name;
-    if (data.avatar_url) avatarImg.src = data.avatar_url;
-  }
-}
-
-async function saveProfile() {
-  const displayName = document.getElementById("displayName").value.trim();
-  const file = document.getElementById("avatarFile").files[0];
-
-  const { data: sess } = await client.auth.getSession();
-  const session = sess.session;
-  if (!session) return alert("Not logged in.");
-
-  let avatarUrl = null;
-
-  if (file) {
-    const filePath = `${session.user.id}-${Date.now()}`;
-
-    const { error: uploadError } = await client
-      .storage
-      .from("avatars")
-      .upload(filePath, file, { upsert: true });
-
-    if (uploadError) return alert("Upload error: " + uploadError.message);
-
-    const { data: publicUrl } = client
-      .storage
-      .from("avatars")
-      .getPublicUrl(filePath);
-
-    avatarUrl = publicUrl.publicUrl;
-  }
-
-  const updates = { display_name: displayName };
-  if (avatarUrl) updates.avatar_url = avatarUrl;
-
-  const { error } = await client
-    .from("profiles")
-    .update(updates)
-    .eq("id", session.user.id);
-
-  if (error) return alert("Update error: " + error.message);
-
-  alert("Profile updated!");
-  loadAccountPage();
-}
-
-loadAccountPage();
