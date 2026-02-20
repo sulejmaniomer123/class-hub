@@ -336,6 +336,8 @@ async function saveProfile() {
 // ===== Init =====
 async function init() {
   console.log("INIT RUNNING");
+  
+  loadAnnouncement();
 
   const { data: sess } = await client.auth.getSession();
   let session = sess.session;
@@ -368,3 +370,31 @@ async function init() {
 }
 
 window.addEventListener("DOMContentLoaded", init);
+
+async function loadAnnouncement() {
+  const t = document.getElementById("annTitle");
+  const b = document.getElementById("annBody");
+  if (!t || !b) return;
+
+  const { data, error } = await client
+    .from("announcements")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    t.textContent = "Announcement";
+    b.textContent = "No announcements yet.";
+    return;
+  }
+
+  const latest = (data || [])[0];
+  if (!latest) {
+    t.textContent = "Announcement";
+    b.textContent = "No announcements yet.";
+    return;
+  }
+
+  t.textContent = latest.title || "Announcement";
+  b.textContent = latest.body || "";
+}
