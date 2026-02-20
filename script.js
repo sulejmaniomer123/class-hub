@@ -1,20 +1,23 @@
+
 alert("script loaded");
-// ====== Supabase ======
+
+console.log("SCRIPT LOADED");
+
+
 const SUPABASE_URL = "https://drlpgwtetqiwrkadjboo.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRybHBnd3RldHFpd3JrYWRqYm9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTY2MTAsImV4cCI6MjA4NzA5MjYxMH0.OlnpA_fzkJ5tJGRZrXwpMpULATtQWioLYwmXa0RQoj8";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Convert "username" into an email so Supabase Auth works
+
 function usernameToEmail(username) {
   return `${username.toLowerCase()}@classhub.local`;
 }
 
-// ====== Auth UI (Login/Signup in navbar) ======
 function renderAuthArea(session, profile) {
   const authArea = document.getElementById("authArea");
   if (!authArea) return;
 
-  // Not logged in
+
   if (!session) {
     authArea.innerHTML = `
       <button onclick="showLogin()">Login</button>
@@ -23,27 +26,26 @@ function renderAuthArea(session, profile) {
     return;
   }
 
-  // Logged in
+
   authArea.innerHTML = `
     <span style="margin-right:10px;">${session.user.email}</span>
     <button onclick="logout()">Logout</button>
   `;
 
-  // Admin check
+  
   const announceBtn = document.getElementById("announceBtn");
   if (announceBtn) {
     announceBtn.style.display =
       (profile && profile.is_admin) ? "inline-block" : "none";
   }
 }
-// ====== Profile load ======
+
 async function getMyProfile(session) {
   if (!session?.user?.id) return null;
   const { data } = await client.from("profiles").select("*").eq("id", session.user.id).single();
   return data || null;
 }
 
-// ====== Wall: require login to post ======
 async function enforcePostingRules(session, profile) {
   const postBtn = document.getElementById("postBtn");
   const content = document.getElementById("content");
@@ -64,13 +66,11 @@ async function enforcePostingRules(session, profile) {
     if (hint) hint.style.display = "none";
   }
 
-  // Show Admin-only announce button
   if (announceBtn) {
     announceBtn.style.display = (profile && profile.is_admin) ? "inline-block" : "none";
   }
 }
 
-// ====== Posts ======
 async function addPost() {
   const { data: sess } = await client.auth.getSession();
   const session = sess.session;
@@ -83,7 +83,6 @@ async function addPost() {
   const content = contentEl.value.trim();
   if (!content) return;
 
-  // Get profile for name/pfp
   const profile = await getMyProfile(session);
 
   const { error } = await client.from("posts").insert([{
@@ -108,25 +107,32 @@ async function loadPosts() {
     .select("*")
     .order("created_at", { ascending: false });
 
-container.innerHTML = "";
+  container.innerHTML = "";
 
   if (error) {
-    container.innerHTML = `<div class="post"><strong>Error</strong><p>${escapeHtml(error.message)}</p></div>`;
+    container.innerHTML = `
+      <div class="post">
+        <strong>Error</strong>
+        <p>${escapeHtml(error.message)}</p>
+      </div>
+    `;
     return;
   }
 
   (data || []).forEach(p => {
-container.innerHTML += `
-  <div class="post" style="display:flex;gap:10px;align-items:flex-start;">
-    <img src="${p.avatar_url || ''}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;">
-    <div>
-      <strong>${escapeHtml(p.name || "User")}</strong>
-      <p>${escapeHtml(p.content || "")}</p>
-    </div>
-  </div>
-`;
+    container.innerHTML += `
+      <div class="post" style="display:flex;gap:10px;align-items:flex-start;">
+        <img src="${p.avatar_url || ''}" 
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;">
+        <div>
+          <strong>${escapeHtml(p.name || "User")}</strong>
+          <p>${escapeHtml(p.content || "")}</p>
+        </div>
+      </div>
+    `;
+  });
+}
 
-// ====== Admin announce (uses your Netlify function) ======
 async function adminAnnounce() {
   const { data: sess } = await client.auth.getSession();
   const session = sess.session;
@@ -150,12 +156,13 @@ async function adminAnnounce() {
   alert("Announcement posted!");
 }
 
-// ====== Init ======
+
 async function init() {
+  console.log("INIT RUNNING");
   const { data: sess } = await client.auth.getSession();
   let session = sess.session;
 
-  // ✅ Only fetch profile if logged in
+
   let profile = null;
   if (session) {
     profile = await getMyProfile(session);
@@ -164,12 +171,10 @@ async function init() {
   renderAuthArea(session, profile);
   enforcePostingRules(session, profile);
 
-  // Only load posts if #posts exists on this page
   if (document.getElementById("posts")) {
     loadPosts();
   }
 
-  // Update UI on login/logout
   client.auth.onAuthStateChange(async (_event, newSessionObj) => {
     session = newSessionObj;
     profile = session ? await getMyProfile(session) : null;
