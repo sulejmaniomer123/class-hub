@@ -150,7 +150,7 @@ async function adminAnnounce() {
 }
 
 // ====== Init ======
-async function init() {
+document.addEventListener("DOMContentLoaded", init);
   const { data: sess } = await client.auth.getSession();
   let session = sess.session;
   let profile = await getMyProfile(session);
