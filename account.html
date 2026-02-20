@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Settings</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+  <h1>Account</h1>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="wall.html">Wall</a>
+    <a href="resources.html">Resources</a>
+    <a href="schedule.html">Schedule</a>
+  </div>
+</nav>
+
+<section class="card">
+  <h2>Profile Settings</h2>
+
+  <img id="avatarPreview" src="" style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin-bottom:15px;">
+
+  <input type="text" id="displayName" placeholder="Display Name">
+
+  <input type="file" id="avatarFile" accept="image/*">
+
+  <button onclick="saveProfile()">Save Changes</button>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

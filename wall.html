@@ -14,8 +14,9 @@
         <a href="index.html">Home</a>
         <a href="wall.html">Wall</a>
         <a href="resources.html">Resources</a>
-        <a href="schedule.html">Schedule</a>
+        <a href="schedule.html">Schedule</a>  
     </div>
+    <div id="authArea"></div>
 </nav>
 
 <!-- 🔥 Announcement Section -->
@@ -26,13 +27,19 @@
 
 <!-- 📝 Create Post -->
 <section class="card">
-    <h2>Create Post</h2>
-    <input type="text" id="name" placeholder="Your name">
-    <textarea id="content" placeholder="Write something..."></textarea>
-    <button onclick="addPost()">Post</button>
-    <button onclick="adminAnnounce()">Announce (Admin)</button>
-</section>
+  <h2>Create Post</h2>
 
+  <p id="loginHint" class="small" style="display:none;">
+    You must log in to post.
+  </p>
+
+  <textarea id="content" placeholder="Write something..."></textarea>
+  <button id="postBtn" onclick="addPost()">Post</button>
+
+  <button id="announceBtn" onclick="adminAnnounce()" style="display:none;">
+    Announce (Admin)
+  </button>
+</section>
 <!-- 📌 Posts -->
 <section class="card">
     <h2>Posts</h2>
