@@ -2,17 +2,10 @@ console.log("SCRIPT LOADED");
 
 // ===== Supabase =====
 const SUPABASE_URL = "https://drlpgwtetqiwrkadjboo.supabase.co";
-const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRybHBnd3RldHFpd3JrYWRqYm9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTY2MTAsImV4cCI6MjA4NzA5MjYxMH0.OlnpA_fzkJ5tJGRZrXwpMpULATtQWioLYwmXa0RQoj8";
-
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRybHBnd3RldHFpd3JrYWRqYm9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MTY2MTAsImV4cCI6MjA4NzA5MjYxMH0.OlnpA_fzkJ5tJGRZrXwpMpULATtQWioLYwmXa0RQoj8"; // keep your anon key here
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ===== Helpers =====
-function usernameToEmail(username) {
-  // IMPORTANT: Supabase rejects @something.local
-  return `${String(username).trim().toLowerCase()}@classhub.app`;
-}
-
 function escapeHtml(str) {
   return String(str ?? "").replace(/[&<>"']/g, (m) => ({
     "&": "&amp;",
@@ -23,29 +16,55 @@ function escapeHtml(str) {
   }[m]));
 }
 
-// ===== Auth UI =====
+// Use a “real-looking” email domain (NOT .local)
+function usernameToEmail(username) {
+  return `${String(username).trim().toLowerCase()}@classhub.site`;
+}
+
+function isWallPage() {
+  return !!document.getElementById("posts");
+}
+
+function isAccountPage() {
+  return !!document.getElementById("displayName");
+}
+
+// ===== Auth UI (buttons in navbar) =====
 function renderAuthArea(session, profile) {
   const authArea = document.getElementById("authArea");
   if (!authArea) return;
 
   if (!session) {
     authArea.innerHTML = `
-      <button type="button" onclick="showLogin()">Login</button>
-      <button type="button" onclick="showSignup()">Sign Up</button>
+      <button type="button" class="navBtn" id="loginBtn">Login</button>
+      <button type="button" class="navBtn primary" id="signupBtn">Sign Up</button>
     `;
-  } else {
-    const display = escapeHtml(profile?.display_name || profile?.username || "User");
-    authArea.innerHTML = `
-      <span style="margin-right:10px; font-weight:800;">${display}</span>
-      <a class="nav-link" href="account.html" style="margin-right:8px;">Account</a>
-      <button type="button" onclick="logout()">Logout</button>
-    `;
+
+    document.getElementById("loginBtn")?.addEventListener("click", showLogin);
+    document.getElementById("signupBtn")?.addEventListener("click", showSignup);
+
+    // Hide admin button when logged out
+    const announceBtn = document.getElementById("announceBtn");
+    if (announceBtn) announceBtn.style.display = "none";
+    return;
   }
 
-  // Admin button show/hide
+  const display = escapeHtml(profile?.display_name || profile?.username || session.user.email || "User");
+  authArea.innerHTML = `
+    <span class="navUser">${display}</span>
+    <button type="button" class="navBtn" id="accountBtn">Account</button>
+    <button type="button" class="navBtn" id="logoutBtn">Logout</button>
+  `;
+
+  document.getElementById("accountBtn")?.addEventListener("click", () => {
+    window.location.href = "account.html";
+  });
+  document.getElementById("logoutBtn")?.addEventListener("click", logout);
+
+  // Admin-only announce button
   const announceBtn = document.getElementById("announceBtn");
   if (announceBtn) {
-    announceBtn.style.display = (session && profile?.is_admin) ? "inline-block" : "none";
+    announceBtn.style.display = profile?.is_admin ? "inline-block" : "none";
   }
 }
 
@@ -54,7 +73,7 @@ async function showLogin() {
   if (u == null) return;
   const p = prompt("Password:");
   if (p == null) return;
-  await login(u, p);
+  await login(u.trim(), p);
 }
 
 async function showSignup() {
@@ -62,46 +81,49 @@ async function showSignup() {
   if (u == null) return;
   const p = prompt("Choose a password:");
   if (p == null) return;
-  await signup(u, p);
+  await signup(u.trim(), p);
 }
 
 async function signup(username, password) {
-  username = String(username).trim();
-  password = String(password);
-
-  if (!username || !password) return alert("Username and password required.");
+  if (!username || !password) return;
 
   const email = usernameToEmail(username);
+
   const { data, error } = await client.auth.signUp({
     email,
     password,
-    options: {
-      data: { username, display_name: username },
-    },
+    options: { data: { username, display_name: username } },
   });
 
-  if (error) return alert("Signup error: " + error.message);
-
-  // Depending on Supabase settings, user may need email confirmation.
-  // You can disable confirmations in Supabase Auth settings for this school project.
   console.log("SIGNUP data:", data);
-  alert("Account created! Now press Login.");
+  if (error) {
+    console.error("SIGNUP error:", error);
+    alert("Signup error: " + error.message);
+    return;
+  }
+
+  alert("Account created! Now log in.");
 }
 
 async function login(username, password) {
-  username = String(username).trim();
-  password = String(password);
+  if (!username || !password) return;
 
   const email = usernameToEmail(username);
-  const { error } = await client.auth.signInWithPassword({ email, password });
-  if (error) return alert("Login error: " + error.message);
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+  console.log("LOGIN data:", data);
+  if (error) {
+    console.error("LOGIN error:", error);
+    alert("Login error: " + error.message);
+    return;
+  }
 }
 
 async function logout() {
   await client.auth.signOut();
 }
 
-// ===== Profile =====
+// ===== Profiles =====
 async function getMyProfile(session) {
   if (!session?.user?.id) return null;
 
@@ -112,8 +134,8 @@ async function getMyProfile(session) {
     .single();
 
   if (error) {
-    // If profiles table/rls blocks, just continue gracefully
-    console.log("getMyProfile error:", error.message);
+    // If you haven't created the profiles table/trigger yet, you'll see errors here.
+    console.warn("getMyProfile:", error.message);
     return null;
   }
 
@@ -125,6 +147,7 @@ function enforcePostingRules(session, profile) {
   const postBtn = document.getElementById("postBtn");
   const content = document.getElementById("content");
   const hint = document.getElementById("loginHint");
+  const announceBtn = document.getElementById("announceBtn");
 
   if (postBtn && content) {
     const loggedIn = !!session;
@@ -133,9 +156,8 @@ function enforcePostingRules(session, profile) {
     if (hint) hint.style.display = loggedIn ? "none" : "block";
   }
 
-  const announceBtn = document.getElementById("announceBtn");
   if (announceBtn) {
-    announceBtn.style.display = (session && profile?.is_admin) ? "inline-block" : "none";
+    announceBtn.style.display = profile?.is_admin ? "inline-block" : "none";
   }
 }
 
@@ -174,25 +196,20 @@ async function loadPosts() {
   const { data, error } = await client
     .from("posts")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }); // if you don't have created_at, add it to posts
 
   container.innerHTML = "";
 
   if (error) {
-    container.innerHTML = `
-      <div class="post">
-        <strong>Error</strong>
-        <p>${escapeHtml(error.message)}</p>
-      </div>
-    `;
+    container.innerHTML = `<div class="post"><strong>Error</strong><p>${escapeHtml(error.message)}</p></div>`;
     return;
   }
 
   (data || []).forEach((p) => {
-    const avatar = p.avatar_url ? escapeHtml(p.avatar_url) : "";
     container.innerHTML += `
       <div class="post" style="display:flex;gap:10px;align-items:flex-start;">
-        <img src="${avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;">
+        <img src="${escapeHtml(p.avatar_url || "")}"
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;">
         <div>
           <strong>${escapeHtml(p.name || "User")}</strong>
           <p>${escapeHtml(p.content || "")}</p>
@@ -202,40 +219,37 @@ async function loadPosts() {
   });
 }
 
-// ===== Announcements (reads latest row from "announcements") =====
+// ===== Announcements (no created_at assumption) =====
 async function loadAnnouncement() {
-  const t = document.getElementById("annTitle");
-  const b = document.getElementById("annBody");
-  if (!t || !b) return;
+  const titleEl = document.getElementById("annTitle");
+  const bodyEl = document.getElementById("annBody");
+  if (!titleEl || !bodyEl) return;
 
   const { data, error } = await client
     .from("announcements")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(1);
 
   if (error) {
-    b.textContent = "No announcements yet.";
-    console.log("announcements error:", error.message);
+    console.warn("announcements:", error.message);
+    titleEl.textContent = "Announcement";
+    bodyEl.textContent = "No announcements yet.";
     return;
   }
 
-  const row = (data || [])[0];
-  if (!row) {
-    b.textContent = "No announcements yet.";
-    return;
-  }
-
-  t.textContent = row.title || "Announcement";
-  b.textContent = row.body || "";
+  const latest = (data && data[0]) || null;
+  titleEl.textContent = latest?.title || "Announcement";
+  bodyEl.textContent = latest?.body || "No announcements yet.";
 }
 
-// ===== Admin announce (Netlify function) =====
+// ===== Admin announce =====
 async function adminAnnounce() {
   const { data: sess } = await client.auth.getSession();
   const session = sess.session;
   if (!session) return alert("Admin must be logged in.");
 
+  // Safety: re-check profile is_admin
   const profile = await getMyProfile(session);
   if (!profile?.is_admin) return alert("Not an admin account.");
 
@@ -248,15 +262,75 @@ async function adminAnnounce() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
+      "Authorization": `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({ title, body }),
   });
 
   if (!res.ok) return alert("Failed: " + (await res.text()));
-
   alert("Announcement posted!");
   await loadAnnouncement();
+}
+
+// ===== Account page =====
+async function loadAccountPage() {
+  const avatarImg = document.getElementById("avatarPreview");
+  const displayInput = document.getElementById("displayName");
+  if (!avatarImg || !displayInput) return;
+
+  const { data: sess } = await client.auth.getSession();
+  const session = sess.session;
+  if (!session) {
+    alert("You must log in.");
+    window.location.href = "wall.html";
+    return;
+  }
+
+  const profile = await getMyProfile(session);
+  if (profile) {
+    displayInput.value = profile.display_name || profile.username || "";
+    if (profile.avatar_url) avatarImg.src = profile.avatar_url;
+  }
+
+  // Hook save button if it exists
+  document.getElementById("saveProfileBtn")?.addEventListener("click", saveProfile);
+}
+
+async function saveProfile() {
+  const displayNameEl = document.getElementById("displayName");
+  const fileEl = document.getElementById("avatarFile");
+  if (!displayNameEl || !fileEl) return;
+
+  const displayName = displayNameEl.value.trim();
+  const file = fileEl.files?.[0];
+
+  const { data: sess } = await client.auth.getSession();
+  const session = sess.session;
+  if (!session) return alert("Not logged in.");
+
+  let avatarUrl = null;
+
+  if (file) {
+    const filePath = `${session.user.id}-${Date.now()}`;
+
+    const { error: uploadError } = await client
+      .storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) return alert("Upload error: " + uploadError.message);
+
+    const { data: publicUrl } = client.storage.from("avatars").getPublicUrl(filePath);
+    avatarUrl = publicUrl?.publicUrl || null;
+  }
+
+  const updates = { display_name: displayName };
+  if (avatarUrl) updates.avatar_url = avatarUrl;
+
+  const { error } = await client.from("profiles").update(updates).eq("id", session.user.id);
+  if (error) return alert("Update error: " + error.message);
+
+  alert("Profile updated!");
 }
 
 // ===== Init =====
@@ -268,21 +342,29 @@ async function init() {
   let profile = await getMyProfile(session);
 
   renderAuthArea(session, profile);
-  enforcePostingRules(session, profile);
 
-  await loadAnnouncement();
-  await loadPosts();
+  if (isWallPage()) {
+    enforcePostingRules(session, profile);
+    await loadAnnouncement();
+    await loadPosts();
+  }
+
+  if (isAccountPage()) {
+    await loadAccountPage();
+  }
 
   client.auth.onAuthStateChange(async (_event, newSession) => {
     session = newSession;
     profile = await getMyProfile(session);
 
     renderAuthArea(session, profile);
-    enforcePostingRules(session, profile);
 
-    await loadAnnouncement();
-    await loadPosts();
+    if (isWallPage()) {
+      enforcePostingRules(session, profile);
+      await loadPosts();
+      await loadAnnouncement();
+    }
   });
 }
 
-document.addEventListener("DOMContentLoaded", init);
+window.addEventListener("DOMContentLoaded", init);
