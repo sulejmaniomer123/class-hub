@@ -10,13 +10,24 @@
 
 <nav>
     <h1>Class Wall</h1>
-    <div>
+
+    <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="wall.html">Wall</a>
         <a href="resources.html">Resources</a>
-        <a href="schedule.html">Schedule</a>  
+        <a href="schedule.html">Schedule</a>
     </div>
-    <div id="authArea"></div>
+
+    <div class="auth-buttons">
+        <!-- Shown when NOT logged in -->
+        <button id="loginBtn" onclick="showLogin()">Login</button>
+        <button id="signupBtn" onclick="showSignup()">Sign Up</button>
+
+        <!-- Shown when logged in -->
+        <span id="userDisplay" style="display:none;"></span>
+        <button id="accountBtn" onclick="goAccount()" style="display:none;">Account</button>
+        <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+    </div>
 </nav>
 
 <!-- 🔥 Announcement Section -->
