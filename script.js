@@ -18,9 +18,9 @@ function escapeHtml(str) {
 
 // Use a “real-looking” email domain (NOT .local)
 function usernameToEmail(username) {
-  return `${String(username).trim().toLowerCase()}@classhub.site`;
+  return `${username.toLowerCase().replace(/[^a-z0-9._-]/g, "")}@classhub.com`;
+  // or @classhub.com / @example.com
 }
-
 function isWallPage() {
   return !!document.getElementById("posts");
 }
