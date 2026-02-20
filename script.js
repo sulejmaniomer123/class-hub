@@ -13,66 +13,28 @@ function renderAuthArea(session, profile) {
   const authArea = document.getElementById("authArea");
   if (!authArea) return;
 
+  // Not logged in
   if (!session) {
     authArea.innerHTML = `
-      <button type="button" onclick="showLogin()">Log in</button>
-      <button type="button" onclick="showSignup()">Sign up</button>
+      <button onclick="showLogin()">Login</button>
+      <button onclick="showSignup()">Sign Up</button>
     `;
     return;
   }
 
-  const display = escapeHtml(profile?.display_name || profile?.username || "User");
+  // Logged in
   authArea.innerHTML = `
-    <span style="margin-right:10px; font-weight:800;">${display}</span>
-    <button type="button" onclick="goAccount()">Account</button>
-    <button type="button" onclick="logout()">Log out</button>
+    <span style="margin-right:10px;">${session.user.email}</span>
+    <button onclick="logout()">Logout</button>
   `;
+
+  // Admin check
+  const announceBtn = document.getElementById("announceBtn");
+  if (announceBtn) {
+    announceBtn.style.display =
+      (profile && profile.is_admin) ? "inline-block" : "none";
+  }
 }
-
-function showLogin() {
-  const u = prompt("Username:");
-  if (u == null) return;
-  const p = prompt("Password:");
-  if (p == null) return;
-  login(u.trim(), p);
-}
-
-function showSignup() {
-  const u = prompt("Choose a username:");
-  if (u == null) return;
-  const p = prompt("Choose a password:");
-  if (p == null) return;
-  signup(u.trim(), p);
-}
-
-function goAccount() {
-  window.location.href = "account.html";
-}
-
-async function signup(username, password) {
-  const email = usernameToEmail(username);
-  const { error } = await client.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { username, display_name: username }
-    }
-  });
-
-  if (error) return alert("Signup error: " + error.message);
-  alert("Account created! Now log in.");
-}
-
-async function login(username, password) {
-  const email = usernameToEmail(username);
-  const { error } = await client.auth.signInWithPassword({ email, password });
-  if (error) return alert("Login error: " + error.message);
-}
-
-async function logout() {
-  await client.auth.signOut();
-}
-
 // ====== Profile load ======
 async function getMyProfile(session) {
   if (!session?.user?.id) return null;
