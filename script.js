@@ -293,7 +293,7 @@ async function adminAnnounce() {
   if (!res.ok) return alert("Failed: " + (await res.text()));
   alert("Announcement posted!");
   await loadAnnouncement();
-}
+
 
 // ===== Account page =====
 async function loadAccountPage() {
